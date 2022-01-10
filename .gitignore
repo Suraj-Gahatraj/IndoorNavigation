@@ -1,0 +1,7 @@
+obj
+bin
+/IndoorNavigation.Application/obj
+/IndoorNavigation.Application/bin
+/IndoorNavigation.Domain/obj
+/IndoorNavigation.Domain/bin
+.vs
