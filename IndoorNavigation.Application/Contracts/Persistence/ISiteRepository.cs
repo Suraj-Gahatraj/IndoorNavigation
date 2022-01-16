@@ -1,4 +1,6 @@
-﻿using IndoorNavigation.Domain.Entities;
+﻿using IndoorNavigation.Application.Features.Sites;
+using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
+using IndoorNavigation.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +11,7 @@ namespace IndoorNavigation.Application.Contracts.Persistence
 {
     public interface ISiteRepository:IAsyncRepository<Site>
     {
+        Task CreateSite(CreateSiteVm input);
+        Task<List<SiteListVm>> GetAllAdminSite(string userId);
     }
 }
