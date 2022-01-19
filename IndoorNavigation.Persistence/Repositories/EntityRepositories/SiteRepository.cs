@@ -4,6 +4,7 @@ using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
 using IndoorNavigation.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,24 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
 
     public static class FileUtility
     {
-        public static string GetSiteMarkerUploadPath(string siteId, string markerName, out string fileName)
+        public static string GetSiteMapUploadPath(string siteId, string markerName, out string fileName)
         {
-            var storagePath = Path.Combine(Environment.CurrentDirectory + "\\uploads\\SiteMarkerImageUploads\\" + siteId);
+            var storagePath = Path.Combine(Environment.CurrentDirectory + "\\uploads\\SiteMapImageUploads\\" + siteId);
             fileName = siteId + "_" + markerName + "_" + DateTime.Now.Millisecond.ToString();
             return storagePath;
+        }
+
+
+        public static async Task<List<string>> ReadAsStringAsync(this IFormFile file)
+        {
+            var result=new List<string>();
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                while (reader.Peek() >= 0)
+                    result.Add(await reader.ReadLineAsync()); 
+                    
+            }
+            return result;
         }
 
 
@@ -71,19 +85,47 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             _userManager = userManager; 
         }
 
-        public async Task CreateSite( CreateSiteVm input)
+        public async Task CreateSite( CreateSiteVm input,string userId)
         {
-            //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+          
 
-            var mapPointConfiguration = input.MapPointConfiguration.ToMapConfigurationString();
+            var mapPointConfiguration = await input.MapPointConfigurationFile.ReadAsStringAsync();   
+            var mapPointConfigurationString  = JsonConvert.SerializeObject(mapPointConfiguration);
+            // extracting data from MapMarkerConfigFile     
+            var mapMarkerFileData = new List<string>();
+            using (var reader = new StreamReader(input.MapMarkerFile.OpenReadStream()))
+            {
+                while (reader.Peek() >= 0)
+                    mapMarkerFileData.Add(await reader.ReadLineAsync());
+            }
+
+            //3.8§2.58§90§1.43§16§164§555§328
+
+            /*
+             * 
+             *  3.8 = lentght of site map in meter
+                §2.58 = breadth of site in meter
+                §90 = angle to scan marker
+                §1.43 = marker width and height (square)
+                §16 = x position of marker with respect to map image. 
+                §164 = y position of marker in sitemap coordinate space
+                §555 = (X dim)image dimension of site map
+                §328 (y dim)image dimension of site map
+             * */
+            var mapMarkerData = mapMarkerFileData[0].Split("§");
             var newSite = new Site()
             {
-                AdminId = Guid.Parse(input.AdminId),
+                AdminId = Guid.Parse(userId),
                 SiteName = input.SiteName,
-                CreatedBy = input.AdminId,
+                CreatedBy = userId,
                 CreatedOn = DateTime.Now,
-                LastModifiedBy = input.AdminId,
-                MapPointConfiguration = mapPointConfiguration
+                LastModifiedBy = userId,
+                MapPointConfiguration = mapPointConfigurationString,
+                SiteMapLength = Convert.ToDouble(mapMarkerData[0]),
+                SiteMapBreadth = Convert.ToDouble(mapMarkerData[1]),
+                SiteMapImageHeight = Convert.ToDouble(mapMarkerData[7]),
+                SiteMapImageWidth = Convert.ToDouble(mapMarkerData[6]),
+
             };
 
             _context.Sites.Add(newSite);
@@ -91,18 +133,23 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             await UploadAsync(input, newSite);
 
             var mapMarkerList=new List<MapMarker>();
-             
-            foreach(var data in input.MarkerPoints)
+
+            var newMapMarker = new MapMarker()
             {
-                mapMarkerList.Add(new MapMarker() {
-                    BlobUrl = data.BlobUrl, 
-                    MarkerName = data.MarkerName,
-                    CreatedBy = input.AdminId,
-                    CreatedOn = DateTime.Now,
-                    LastModifiedBy = input.AdminId,
-                });
-            }
-            
+                MarkerName="",
+                MapMarkerBlobUrl = "",
+                CreatedBy = userId,
+                CreatedOn = DateTime.Now,
+                LastModifiedBy = userId,
+                MarkerHeight = Convert.ToDouble(mapMarkerData[3]),
+                MarkerWidth = Convert.ToDouble(mapMarkerData[3]),
+                MarkerScanAngle = Convert.ToDouble(mapMarkerData[2]),
+                Marker_XPos = Convert.ToDouble(mapMarkerData[4]),
+                Marker_YPos = Convert.ToDouble(mapMarkerData[5]),
+
+
+            };
+            mapMarkerList.Add(newMapMarker);     
             newSite.MapMarkers = mapMarkerList;       
             _context.SaveChanges();
 
@@ -111,17 +158,12 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
 
         public async Task UploadAsync(CreateSiteVm model, Site site)
         {
-            var attachments = model.MarkerPoints;
+            var attachments = model.SiteMapImage;
 
-            foreach (var attachment in attachments)
-            {
-                // var fileName = String.Empty;
-                string fileName = String.Empty;
-                var uploadPath = FileUtility.GetSiteMarkerUploadPath(site.Id.ToString(), attachment.MarkerName, out fileName);
-                var blobUrl=await FileUtility.Upload(attachment.Files, uploadPath, fileName);
-                attachment.BlobUrl = blobUrl; 
-                
-            }
+            string fileName = String.Empty;
+            var uploadPath = FileUtility.GetSiteMapUploadPath(site.Id.ToString(), model.SiteName, out fileName);
+            var blobUrl = await FileUtility.Upload(model.SiteMapImage, uploadPath, fileName);
+            site.SiteMapUrl = blobUrl;
 
         }
 
@@ -129,24 +171,27 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
         public async Task<List<SiteListVm>> GetAllAdminSite(string userId)
 
         {
-            //var siteMapData=
-
+            
             var siteTest = _context.Sites.Where(x => x.AdminId == Guid.Parse(userId)).ToList();
 
             var mapMarkerList = _context.MapMarkers.Where(x => siteTest.Select(x => x.Id).Contains(x.SiteId)).ToList();
             var siteList = _context.Sites.Where(x => x.AdminId == Guid.Parse(userId)).ToList().Select(x => new SiteListVm
             {
                 SiteId = x.Id.ToString(),
-                SiteMapUrl = "test.bmp",
-                SiteMapWidth = 20.5,
-                SiteMapHeight = 23.5,
-                SiteMapLength = 45.6,
-                SiteMapBreadth = 34.5,
+                SiteMapUrl = x.SiteMapUrl,
+                SiteMapWidth = x.SiteMapImageWidth,
+                SiteMapHeight = x.SiteMapImageHeight,
+                SiteMapLength = x.SiteMapLength,
+                SiteMapBreadth = x.SiteMapBreadth,
                MapPoints = x.MapPointConfiguration.ToMapConfigurationObject().ToList(),
                 Markers = mapMarkerList.Where(y=>y.SiteId==x.Id).Select(x => new MarkerInfo
                 {
-                    MarkerImageUrl = x.BlobUrl,
+                    MarkerImageUrl = "",
                     MarkerName = x.MarkerName,
+                    PositionX=x.Marker_XPos,
+                    PositionY=x.Marker_YPos,
+                    MarkerDim=x.MarkerWidth,
+                    MarkerScanAngle=x.MarkerScanAngle
 
                 })
 

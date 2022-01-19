@@ -11,7 +11,7 @@ namespace IndoorNavigation.Application.Contracts.Persistence
 {
     public interface ISiteRepository:IAsyncRepository<Site>
     {
-        Task CreateSite(CreateSiteVm input);
+        Task CreateSite(CreateSiteVm input,string userId);
         Task<List<SiteListVm>> GetAllAdminSite(string userId);
     }
 }

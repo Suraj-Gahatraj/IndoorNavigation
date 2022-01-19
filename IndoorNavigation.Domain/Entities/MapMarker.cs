@@ -12,7 +12,12 @@ namespace IndoorNavigation.Domain.Entities
         public Guid Id { get; set; }
         public string MarkerName { get; set; }
         public Guid SiteId { get; set; }
-        public string BlobUrl { get; set; }
+        public double MarkerScanAngle { get; set; }
+        public double MarkerWidth { get; set; }
+        public double MarkerHeight { get; set; }
+        public double Marker_XPos { get; set; }
+        public double Marker_YPos { get; set; }
+        public string MapMarkerBlobUrl { get; set; }
         public virtual Site Site { get; set; }
     }
 }

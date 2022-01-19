@@ -17,9 +17,9 @@ namespace IndoorNavigation.Application.Features.Sites.Commands.CreateSite
         }
 
 
-        public static List<SiteCoordinate>ToMapConfigurationObject(this string configuration)
+        public static List<string>ToMapConfigurationObject(this string configuration)
         {
-            var result= JsonConvert.DeserializeObject<List<SiteCoordinate>>(configuration); 
+            var result= JsonConvert.DeserializeObject<List<string>>(configuration); 
             return result;
         }
     }
@@ -28,26 +28,26 @@ namespace IndoorNavigation.Application.Features.Sites.Commands.CreateSite
     public  class CreateSiteVm
     {
         public string SiteName { get; set; }
-        public string AdminId { get; set; }
-        public List<SiteCoordinate> MapPointConfiguration { get; set; }
-       
-        public List<MapMarkerDto> MarkerPoints { get; set; }
-
+        public IFormFile SiteMapImage { get; set; }
+        public IFormFile MapPointConfigurationFile { get; set; }
+        public IFormFile MapMarkerFile { get; set; }
 
     }
 
     public class MapMarkerDto
     {
         public string MarkerName { get; set; }
-        public string BlobUrl { get; set; }
-        public IFormFile Files { get; set; }
+        public double SiteMapLength { get; set; }
+        public double SiteMapBreadth { get; set; }
+        public double MarkerScanAngle { get; set; }
+        public double MarkerWidth { get; set; }
+        public double MarkerHeight { get; set; }
+        public double Marker_XPos { get; set; }
+        public double Marker_YPos { get; set; }
+        public double SiteMap_XDimension { get; set; }
+        public double SiteMap_YDimension { get; set; }
     }
 
-
-    public class FileObject
-    { 
-        public IFormFile File { get; set; }
-    }
 
     public class SiteCoordinate
     {

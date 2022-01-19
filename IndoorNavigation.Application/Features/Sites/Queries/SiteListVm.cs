@@ -15,7 +15,7 @@ namespace IndoorNavigation.Application.Features.Sites
         public double SiteMapHeight { get; set; }
         public double SiteMapLength { get; set; }
         public double SiteMapBreadth { get; set; }
-        public IEnumerable<SiteCoordinate> MapPoints { get; set; }
+        public IEnumerable<string> MapPoints { get; set; }
 
         public IEnumerable<MarkerInfo> Markers { get; set; }
 
@@ -30,6 +30,6 @@ namespace IndoorNavigation.Application.Features.Sites
         public double PositionY { get; set; }
 
         public double MarkerDim { get; set; }
-        public double ScanAngle { get; set; }
+        public double MarkerScanAngle { get; set; }
     }
 }
