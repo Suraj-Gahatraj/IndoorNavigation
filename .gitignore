@@ -6,3 +6,5 @@ bin
 /IndoorNavigation.Domain/bin
 .vs
 uploads
+Properties
+.config

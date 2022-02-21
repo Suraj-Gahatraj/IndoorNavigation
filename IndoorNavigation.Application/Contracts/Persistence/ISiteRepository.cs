@@ -13,5 +13,6 @@ namespace IndoorNavigation.Application.Contracts.Persistence
     {
         Task CreateSite(CreateSiteVm input,string userId);
         Task<List<SiteListVm>> GetAllAdminSite(string userId);
+        Task<bool> DeleteSiteAysnc(string id);
     }
 }

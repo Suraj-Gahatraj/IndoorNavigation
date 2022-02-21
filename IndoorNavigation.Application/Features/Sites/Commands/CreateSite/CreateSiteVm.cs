@@ -31,6 +31,7 @@ namespace IndoorNavigation.Application.Features.Sites.Commands.CreateSite
         public IFormFile SiteMapImage { get; set; }
         public IFormFile MapPointConfigurationFile { get; set; }
         public IFormFile MapMarkerFile { get; set; }
+        public IFormFile SiteMarkerImage { get; set; }
 
     }
 

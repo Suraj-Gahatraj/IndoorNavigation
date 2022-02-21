@@ -44,7 +44,14 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             return string.IsNullOrEmpty(extension) ? string.Empty : extension.Replace(".", string.Empty).ToLower();
         }
 
+        public static string GetSiteMarkerUploadPath(string siteId, string markerName, out string fileName)
+        {
 
+            var storagePath = Path.Combine(Environment.CurrentDirectory + "\\uploads\\SiteMapMarkerUploads\\" + siteId);
+            fileName = siteId + "_" + markerName + "_" + DateTime.Now.Millisecond.ToString();
+            return storagePath;
+
+        }
         public static async Task Upload(MemoryStream ms, string filePath)
         {
 
@@ -68,6 +75,16 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
 
             return filePath;
 
+        }
+
+
+        public static string GetStaticDownloadLink(string url)
+        {
+            if (url == "") return "";
+            var splittingUrl = url.Split(@"uploads\");
+            var requiredUrl = splittingUrl[1].Replace(@"\", "/");
+            var newFileLocation = @"https://api.bandbnavigation.com/" + "uploads/" + requiredUrl;
+            return newFileLocation;
         }
     }
 
@@ -150,7 +167,8 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
 
             };
             mapMarkerList.Add(newMapMarker);     
-            newSite.MapMarkers = mapMarkerList;       
+            newSite.MapMarkers = mapMarkerList;
+            await UploadMarkerAsync(input, newSite, newMapMarker);
             _context.SaveChanges();
 
         }
@@ -167,6 +185,18 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
 
         }
 
+        public async Task UploadMarkerAsync(CreateSiteVm model, Site site, MapMarker mapMarker)
+        {
+            var attachments = model.SiteMarkerImage;
+
+            string fileName = String.Empty;
+            var uploadPath = FileUtility.GetSiteMarkerUploadPath(site.Id.ToString(), model.SiteName, out fileName);
+            var blobUrl = await FileUtility.Upload(model.SiteMarkerImage, uploadPath, fileName);
+            //site.SiteMapUrl = blobUrl;
+
+            mapMarker.MapMarkerBlobUrl = blobUrl;
+        }
+
 
         public async Task<List<SiteListVm>> GetAllAdminSite(string userId)
 
@@ -178,7 +208,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             var siteList = _context.Sites.Where(x => x.AdminId == Guid.Parse(userId)).ToList().Select(x => new SiteListVm
             {
                 SiteId = x.Id.ToString(),
-                SiteMapUrl = x.SiteMapUrl,
+                SiteMapUrl = FileUtility.GetStaticDownloadLink(x.SiteMapUrl),
                 SiteMapWidth = x.SiteMapImageWidth,
                 SiteMapHeight = x.SiteMapImageHeight,
                 SiteMapLength = x.SiteMapLength,
@@ -186,7 +216,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
                MapPoints = x.MapPointConfiguration.ToMapConfigurationObject().ToList(),
                 Markers = mapMarkerList.Where(y=>y.SiteId==x.Id).Select(x => new MarkerInfo
                 {
-                    MarkerImageUrl = "",
+                    MarkerImageUrl = FileUtility.GetStaticDownloadLink(x.MapMarkerBlobUrl),
                     MarkerName = x.MarkerName,
                     PositionX=x.Marker_XPos,
                     PositionY=x.Marker_YPos,
@@ -200,6 +230,22 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             return siteList;    
         }
 
+
+        public async Task<bool> DeleteSiteAysnc(string id)
+        {
+            var siteId = Guid.Parse(id);
+            //find the ite first
+
+            var site = _context.Sites.Where(x => x.Id == siteId).FirstOrDefault();
+            if (site == null) return false;
+
+            else
+            {
+                _context.Sites.Remove(site);
+                _context.SaveChanges();
+                return true;
+            }
+        }
 
 
         public Task<Site> AddAsync(Site entity)

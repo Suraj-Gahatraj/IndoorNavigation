@@ -47,6 +47,16 @@ namespace IndoorNavigation.Api.Controllers
             return Ok();
         }
 
+        [AllowAnonymous]
+        [HttpPost("api/deleteSite")]       
+        public async Task<IActionResult> DeleteSite(string SiteId)
+        {
+            var isSuccess =await  _siteRepository.DeleteSiteAysnc(SiteId);
+            if (isSuccess) return Ok("Site deleted successfully");
+
+            return NotFound(" given site don't exist");
+        }
+
        
 
 

@@ -61,7 +61,7 @@ namespace IndoorNavigation.Api.Controllers
         [HttpPost("api/Register")]
         public async Task<IActionResult> Register(string firstName, string lastName, string userName, string password)
         {
-            var userExist= _userManager.FindByNameAsync(userName);
+            var userExist= await _userManager.FindByNameAsync(userName);
             if(userExist == null)
             {
                 var user = new ApplicationUser()
@@ -83,6 +83,13 @@ namespace IndoorNavigation.Api.Controllers
 
             return Conflict("User is Already Registered");
 
+        }
+
+        [AllowAnonymous]
+        [HttpGet("api/test")]
+        public async Task<IActionResult> Test()
+        {
+            return Ok(" I will Run");
         }
     }
 }
