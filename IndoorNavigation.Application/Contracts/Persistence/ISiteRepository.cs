@@ -1,5 +1,6 @@
 ﻿using IndoorNavigation.Application.Features.Sites;
 using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
+using IndoorNavigation.Domain.Dtos;
 using IndoorNavigation.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace IndoorNavigation.Application.Contracts.Persistence
 {
     public interface ISiteRepository:IAsyncRepository<Site>
     {
-        Task CreateSite(CreateSiteVm input,string userId);
+        Task<SiteViewDto> CreateSite(CreateSiteVm input, string userId);
         Task<List<SiteListVm>> GetAllAdminSite(string userId);
         Task<bool> DeleteSiteAysnc(string id);
     }

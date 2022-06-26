@@ -10,6 +10,7 @@ namespace IndoorNavigation.Application.Features.Sites
     public class SiteListVm
     {
         public string SiteId { get; set; }
+        public string SiteName { get; set; }
         public string SiteMapUrl { get; set; }
         public double SiteMapWidth { get; set; }
         public double SiteMapHeight { get; set; }

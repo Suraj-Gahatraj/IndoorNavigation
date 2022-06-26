@@ -1,6 +1,7 @@
 ﻿using IndoorNavigation.Application.Contracts.Persistence;
 using IndoorNavigation.Application.Features.Sites;
 using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
+using IndoorNavigation.Domain.Dtos;
 using IndoorNavigation.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -102,7 +103,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             _userManager = userManager; 
         }
 
-        public async Task CreateSite( CreateSiteVm input,string userId)
+        public async Task<SiteViewDto> CreateSite( CreateSiteVm input,string userId)
         {
           
 
@@ -171,6 +172,14 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             await UploadMarkerAsync(input, newSite, newMapMarker);
             _context.SaveChanges();
 
+            var viewModel = new SiteViewDto()
+            {
+                SiteId = newSite.Id,
+                SiteName = newSite.SiteName,
+                SiteMapUrl = newSite.SiteMapUrl
+            };
+
+            return viewModel;
         }
 
 
@@ -208,6 +217,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             var siteList = _context.Sites.Where(x => x.AdminId == Guid.Parse(userId)).ToList().Select(x => new SiteListVm
             {
                 SiteId = x.Id.ToString(),
+                SiteName=x.SiteName,
                 SiteMapUrl = FileUtility.GetStaticDownloadLink(x.SiteMapUrl),
                 SiteMapWidth = x.SiteMapImageWidth,
                 SiteMapHeight = x.SiteMapImageHeight,

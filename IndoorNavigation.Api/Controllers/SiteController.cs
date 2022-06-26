@@ -42,9 +42,9 @@ namespace IndoorNavigation.Api.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.Name);
 
-            await _siteRepository.CreateSite(input, userId);
+           var model= await _siteRepository.CreateSite(input, userId);
 
-            return Ok();
+            return Ok(model);
         }
 
         [AllowAnonymous]
