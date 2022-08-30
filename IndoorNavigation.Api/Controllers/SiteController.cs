@@ -1,6 +1,7 @@
 ﻿using IndoorNavigation.Api.Utilities;
 using IndoorNavigation.Application.Contracts.Persistence;
 using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
+using IndoorNavigation.Domain.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -47,7 +48,7 @@ namespace IndoorNavigation.Api.Controllers
             return Ok(model);
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("api/deleteSite")]       
         public async Task<IActionResult> DeleteSite(string SiteId)
         {
@@ -57,7 +58,25 @@ namespace IndoorNavigation.Api.Controllers
             return NotFound(" given site don't exist");
         }
 
-       
+        [AllowAnonymous]
+        [HttpPost("api/UpdateSiteMarker")]
+       public async Task<IActionResult> UpdateSiteMarker([FromForm] SiteMapMarkerVm input )
+        {
+            var isSuccess = await _siteRepository.CreateSiteMapMarker(input);
+            if (isSuccess) return Ok("Image uploaded successfully to site marker");
+            else
+            {
+                return Conflict("Something went wrong");
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("api/getAllMarkerImageGallery")]
+        public async Task<IActionResult> GetAllMarkerImageGallery(string siteId,string markerId)
+        {
+            var response = await _siteRepository.GetMarkerImageGallery(siteId, markerId);
+            return Ok(response);
+        }
 
 
       
