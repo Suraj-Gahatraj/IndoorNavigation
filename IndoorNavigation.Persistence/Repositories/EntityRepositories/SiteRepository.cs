@@ -25,6 +25,15 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             return storagePath;
         }
 
+        public static string GetSiteMarkerGalleryUploadPath(string siteId,string markerId, string markerName, out string fileName)
+        {
+            var storagePath = Path.Combine(Environment.CurrentDirectory + "\\uploads\\SiteMapMarkerUploads\\" + siteId+"\\"+markerId);
+            fileName = siteId + "_" + markerId + "_" + DateTime.Now.Millisecond.ToString();
+            return storagePath;
+        }
+
+
+
 
         public static async Task<List<string>> ReadAsStringAsync(this IFormFile file)
         {
@@ -283,14 +292,65 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             throw new NotImplementedException();
         }
 
+        public async Task<bool> CreateSiteMapMarker(SiteMapMarkerVm input)
+        {
+            try
+            {
+                string siteId = input.SiteId;
+                string markerId = input.MarkerId;
+                string name = input.Name;
 
+                var mapmakersList = new List<SiteMarkerImage>();
+                foreach (var image in input.ImageFiles)
+                {
+                    var attachments = image;
+                    string fileName = "";
+                    var uploadPath = FileUtility.GetSiteMarkerGalleryUploadPath(siteId, markerId, name, out fileName);
+                    var markerImageUrl = await FileUtility.Upload(image, uploadPath, fileName);
+                    mapmakersList.Add(new SiteMarkerImage()
+                    {
+                        Name = name,
+                        SiteId = siteId,
+                        MapMarkerId = markerId,
+                        ImageUrl = markerImageUrl
+                    });
 
+                }
 
+                _context.siteMarkerImages.AddRange(mapmakersList);
+                _context.SaveChanges();
+
+                return true;
+            }
+
+            catch (Exception ex)
+            {
+                return false;
+            }
+            
+            // start uploading the file to the server
+        }
+
+        public async Task<List<MarkerImageGalleryDto>> GetMarkerImageGallery(string siteId, string markerId)
+        {
+            try
+            {
+                var query = _context.siteMarkerImages.Where(x => x.SiteId == siteId && x.MapMarkerId == markerId).Select(x => new MarkerImageGalleryDto
+                {
+                    Name = x.Name,
+                    SiteId = x.SiteId,
+                    MarkerId = x.MapMarkerId,
+                    ImageUrl = FileUtility.GetStaticDownloadLink(x.ImageUrl),
+                }).ToList();
+                return query;
+            }
+
+            catch { 
+                    
+            
+            }
        
-
-
-
-
-
+            throw new NotImplementedException();
+        }
     }
 }

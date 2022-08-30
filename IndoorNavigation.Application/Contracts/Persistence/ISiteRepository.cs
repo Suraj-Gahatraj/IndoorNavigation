@@ -15,5 +15,7 @@ namespace IndoorNavigation.Application.Contracts.Persistence
         Task<SiteViewDto> CreateSite(CreateSiteVm input, string userId);
         Task<List<SiteListVm>> GetAllAdminSite(string userId);
         Task<bool> DeleteSiteAysnc(string id);
+        Task<bool> CreateSiteMapMarker(SiteMapMarkerVm input);
+        Task <List<MarkerImageGalleryDto>>GetMarkerImageGallery(string siteId, string markerId);
     }
 }

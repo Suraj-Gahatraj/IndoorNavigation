@@ -4,6 +4,7 @@ using IndoorNavigation.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IndoorNavigation.Persistence.Migrations
 {
     [DbContext(typeof(IndoorNavigationDbContext))]
-    partial class IndoorNavigationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220830142047_added-sitemarkerImagesTable")]
+    partial class addedsitemarkerImagesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
