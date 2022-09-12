@@ -35,6 +35,26 @@ namespace IndoorNavigation.Application.Features.Sites.Commands.CreateSite
 
     }
 
+
+    public class CreateMarkerVm
+    {
+        public string Name { get; set; }
+        public decimal X { get; set; }
+        public decimal Y { get; set; }
+        public decimal Z { get; set; }
+    }
+
+
+   public class ViewMarkerDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public decimal X_Pos { get; set; }
+        public decimal Y_Pos { get; set; }
+        public decimal Z_Pos { get; set; }
+    }
+
+
     public class MapMarkerDto
     {
         public string MarkerName { get; set; }

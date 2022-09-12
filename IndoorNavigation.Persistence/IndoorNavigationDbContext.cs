@@ -20,7 +20,8 @@ namespace IndoorNavigation.Persistence
 
         public DbSet<Site> Sites { get; set; }
         public DbSet<MapMarker> MapMarkers { get; set; }    
-        public DbSet<SiteMarkerImage> siteMarkerImages { get; set; }
+        public DbSet<SiteMarkerImage> SiteMarkerImages { get; set; }
+        public DbSet<Marker> Markers { get; set; }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken=new CancellationToken())
         {
             foreach(var entry in ChangeTracker.Entries<AuditableEntity>())

@@ -1,4 +1,5 @@
 ﻿using IndoorNavigation.Application.Contracts.Persistence;
+using IndoorNavigation.Application.Extensions;
 using IndoorNavigation.Application.Features.Sites;
 using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
 using IndoorNavigation.Domain.Dtos;
@@ -21,7 +22,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
         public static string GetSiteMapUploadPath(string siteId, string markerName, out string fileName)
         {
             var storagePath = Path.Combine(Environment.CurrentDirectory + "\\uploads\\SiteMapImageUploads\\" + siteId);
-            fileName = siteId + "_" + markerName + "_" + DateTime.Now.Millisecond.ToString();
+            fileName = siteId + "_" + markerName.RemoveWhitespace() + "_" + DateTime.Now.Millisecond.ToString();
             return storagePath;
         }
 
@@ -56,9 +57,9 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
 
         public static string GetSiteMarkerUploadPath(string siteId, string markerName, out string fileName)
         {
-
+            var removedSpace = markerName.RemoveWhitespace();
             var storagePath = Path.Combine(Environment.CurrentDirectory + "\\uploads\\SiteMapMarkerUploads\\" + siteId);
-            fileName = siteId + "_" + markerName + "_" + DateTime.Now.Millisecond.ToString();
+            fileName = siteId + "_" + removedSpace + "_" + DateTime.Now.Millisecond.ToString();
             return storagePath;
 
         }
@@ -78,10 +79,9 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             }
 
             filePath = Path.Combine(filePath, fileName + "_." + extension);
-            using (var fileStream = System.IO.File.Create(filePath))
-            {
-                await file.CopyToAsync(fileStream);
-            }
+            using var localFile = File.Create(filePath);
+            using var uploadedFile = file.OpenReadStream();
+            await uploadedFile.CopyToAsync(localFile);     
 
             return filePath;
 
@@ -185,7 +185,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             {
                 SiteId = newSite.Id,
                 SiteName = newSite.SiteName,
-                SiteMapUrl = newSite.SiteMapUrl
+                SiteMapUrl = FileUtility.GetStaticDownloadLink(newSite.SiteMapUrl)
             };
 
             return viewModel;
@@ -298,26 +298,30 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             {
                 string siteId = input.SiteId;
                 string markerId = input.MarkerId;
-                string name = input.Name;
+              
 
                 var mapmakersList = new List<SiteMarkerImage>();
-                foreach (var image in input.ImageFiles)
+                foreach (var galleryImage in input.ImageGalleries)
                 {
-                    var attachments = image;
+                    var attachments = galleryImage;
                     string fileName = "";
-                    var uploadPath = FileUtility.GetSiteMarkerGalleryUploadPath(siteId, markerId, name, out fileName);
-                    var markerImageUrl = await FileUtility.Upload(image, uploadPath, fileName);
+                    var uploadPath = FileUtility.GetSiteMarkerGalleryUploadPath(siteId, markerId, galleryImage.Name, out fileName);
+                    var markerImageUrl = await FileUtility.Upload(galleryImage.Image, uploadPath, fileName);
                     mapmakersList.Add(new SiteMarkerImage()
                     {
-                        Name = name,
+                        Name = galleryImage.Name,
                         SiteId = siteId,
-                        MapMarkerId = markerId,
-                        ImageUrl = markerImageUrl
+                        MarkerId = markerId,
+                        ImageUrl = markerImageUrl,
+                        X=galleryImage.X,
+                        Y=galleryImage.Y,
+                        Z=galleryImage.Z
+                        
                     });
 
                 }
 
-                _context.siteMarkerImages.AddRange(mapmakersList);
+                _context.SiteMarkerImages.AddRange(mapmakersList);
                 _context.SaveChanges();
 
                 return true;
@@ -335,11 +339,11 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
         {
             try
             {
-                var query = _context.siteMarkerImages.Where(x => x.SiteId == siteId && x.MapMarkerId == markerId).Select(x => new MarkerImageGalleryDto
+                var query = _context.SiteMarkerImages.Where(x => x.SiteId == siteId && x.MarkerId == markerId).Select(x => new MarkerImageGalleryDto
                 {
                     Name = x.Name,
                     SiteId = x.SiteId,
-                    MarkerId = x.MapMarkerId,
+                    MarkerId = x.MarkerId,
                     ImageUrl = FileUtility.GetStaticDownloadLink(x.ImageUrl),
                 }).ToList();
                 return query;
