@@ -1,5 +1,6 @@
 ﻿using IndoorNavigation.Application.Contracts.Persistence;
 using IndoorNavigation.Application.Features.Sites.Commands.CreateSite;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -15,6 +16,8 @@ namespace IndoorNavigation.Api.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
+        [Authorize]
+        [HttpPost("api/createMarker")]
         public async Task<IActionResult> CreateMarker([FromBody] CreateMarkerVm input)
         {
             var userId = User.FindFirstValue(ClaimTypes.Name);
