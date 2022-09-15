@@ -18,6 +18,8 @@ namespace IndoorNavigation.Domain.Entities
         public double SiteMapBreadth { get; set; }
         public string SiteMapUrl { get; set; }
         public string MapPointConfiguration { get; set; }
-        public virtual ICollection<MapMarker> MapMarkers { get; set; }  
+        public virtual ICollection<MapMarker> MapMarkers { get; set; }
+        public virtual ICollection<Marker> Markers { get; set; }
     }
+
 }

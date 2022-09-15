@@ -14,5 +14,10 @@ namespace IndoorNavigation.Domain.Entities
         public decimal X_Pos { get; set; }
         public decimal Y_Pos { get; set; }   
         public decimal Z_Pos { get; set; }
+        public Guid SiteId { get; set; }
+        public virtual Site Site { get; set; }  
+
+        public virtual ICollection<SiteMarkerImage>SiteMarkerImages { get; set; }   
+
     }
 }

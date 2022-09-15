@@ -242,8 +242,21 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
                     MarkerDim=x.MarkerWidth,
                     MarkerScanAngle=x.MarkerScanAngle
 
-                })
+                }),
 
+                SiteMarkers=x.Markers.Select(y=>new MarkerGalleryDto
+                {
+                    MarkerId=y.Id.ToString(),
+                    MarkerName=y.Name,
+                    X=y.X_Pos,
+                    Y=y.Y_Pos,
+                    Z=y.Z_Pos,
+                    Images=y.SiteMarkerImages.Select(z=>new ImageDetail
+                    {
+                        ImageName=z.Name,
+                        ImageUrl= FileUtility.GetStaticDownloadLink(z.ImageUrl)
+                    })
+                })
             }).ToList(); 
 
             return siteList;    
@@ -297,7 +310,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
             try
             {
                 string siteId = input.SiteId;
-                string markerId = input.MarkerId;
+               var markerId = Guid.Parse(input.MarkerId);
               
 
                 var mapmakersList = new List<SiteMarkerImage>();
@@ -305,7 +318,7 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
                 {
                     var attachments = galleryImage;
                     string fileName = "";
-                    var uploadPath = FileUtility.GetSiteMarkerGalleryUploadPath(siteId, markerId, galleryImage.Name, out fileName);
+                    var uploadPath = FileUtility.GetSiteMarkerGalleryUploadPath(siteId, input.MarkerId, galleryImage.Name, out fileName);
                     var markerImageUrl = await FileUtility.Upload(galleryImage.Image, uploadPath, fileName);
                     mapmakersList.Add(new SiteMarkerImage()
                     {
@@ -339,7 +352,8 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
         {
             try
             {
-                var query = _context.SiteMarkerImages.Where(x => x.SiteId == siteId && x.MarkerId == markerId).Select(x => new MarkerImageGalleryDto
+
+                var query = _context.SiteMarkerImages.Where(x => x.SiteId == siteId && x.MarkerId == Guid.Parse(markerId)).Select(x => new MarkerImageGalleryDto
                 {
                     Name = x.Name,
                     SiteId = x.SiteId,
@@ -356,5 +370,9 @@ namespace IndoorNavigation.Persistence.Repositories.EntityRepositories
        
             throw new NotImplementedException();
         }
+
+
+
+        
     }
 }

@@ -11,7 +11,7 @@ namespace IndoorNavigation.Domain.Dtos
         public string Id { get; set; }  
         public string Name { get; set; }    
         public string SiteId { get; set; }
-        public string MarkerId { get; set; }
+        public Guid MarkerId { get; set; }
         public string ImageUrl { get; set; }
     }
 }

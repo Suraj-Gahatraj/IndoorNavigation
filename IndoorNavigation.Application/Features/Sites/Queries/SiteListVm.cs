@@ -19,7 +19,25 @@ namespace IndoorNavigation.Application.Features.Sites
         public IEnumerable<string> MapPoints { get; set; }
 
         public IEnumerable<MarkerInfo> Markers { get; set; }
+        public IEnumerable<MarkerGalleryDto> SiteMarkers { get; set; }
 
+    }
+
+    public class MarkerGalleryDto
+    {
+        public string MarkerId { get; set; }
+        public string MarkerName { get; set; }
+        public decimal X { get; set; }
+        public decimal Y { get; set; }  
+        public decimal Z { get; set; }  
+        public IEnumerable<ImageDetail> Images { get; set; }
+    }
+
+
+    public class ImageDetail
+    {
+        public string ImageName { get; set; }
+        public string ImageUrl { get; set; }    
     }
 
     public class MarkerInfo

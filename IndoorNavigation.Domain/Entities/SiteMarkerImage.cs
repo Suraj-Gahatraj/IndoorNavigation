@@ -13,10 +13,12 @@ namespace IndoorNavigation.Domain.Entities
         public string SiteId { get; set; }
         
         public string ImageUrl { get; set; }
-        public string MarkerId { get; set; } //sitemarker Id  is MapMarkerId
+        public Guid MarkerId { get; set; } //sitemarker Id  is MapMarkerId
         public decimal X { get; set; }
         public decimal Y { get; set; }
         public decimal Z { get; set; }
+
+        public virtual Marker Marker { get; set; }
     }
 
     //abstract concept map is like a site 
