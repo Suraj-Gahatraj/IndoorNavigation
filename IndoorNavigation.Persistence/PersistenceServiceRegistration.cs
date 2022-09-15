@@ -24,6 +24,7 @@ namespace IndoorNavigation.Persistence
                 .AddEntityFrameworkStores<IndoorNavigationDbContext>();
             services.AddScoped(typeof(IAsyncRepository<>), typeof(BaseRepository<>));
             services.AddScoped(typeof(ISiteRepository), typeof(SiteRepository));
+            services.AddScoped(typeof(IMarkerRepository), typeof(MarkerRepository));
 
             return services;
         }

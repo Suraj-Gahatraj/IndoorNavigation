@@ -21,7 +21,7 @@ namespace IndoorNavigation.Api.Controllers
         public async Task<IActionResult> CreateMarker([FromBody] CreateMarkerVm input)
         {
             var userId = User.FindFirstValue(ClaimTypes.Name);
-            var marker = _markerRepo.CreateMarker(input,userId);
+            var marker = await _markerRepo.CreateMarker(input,userId);
             return Ok(marker);
         }
 
